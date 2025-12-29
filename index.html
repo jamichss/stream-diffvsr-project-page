@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="ProPainter for Video Inpainting">
+  <meta name="keywords" content="ProPainter, Video Inpainting, Video Completion, Watermark Removal, Temporal Propogation">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Stream-DiffVSR for streaming video super-resolution</title>
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+<!--   <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+
+  </script> -->
+  <style>
+  .hr {width: 100%; height: 1px; margin: 48px 0; background-color: #d6dbdf;}
+  </style>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/bulma.min.css">
+  <link rel="stylesheet" href="assets/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="assets/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="assets/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="assets/css/index.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+
+  <!-- custom css file  -->
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/twentytwenty.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body style="background-color: #101529;">
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop head">
+      <div class="columns is-centered">
+        <div class="column has-text-centered head">
+          <h1 class="title is-2 publication-title"> 
+            <img src="assets/images/sdvsr-icon.png" width="600"/>
+          </h1>
+          <h1 class="title is-3 publication-title" style="color: white;"> 
+            Low-Latency Streamable Video Super-Resolution via Auto-Regressive Diffusion
+          </h1>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="">Hau-Shiang Shiu<sup>1</sup></a>,&nbsp;&nbsp;</span>
+            <span class="author-block">
+              <a href="https://linjohnss.github.io/">Chin-Yang Lin<sup>1</sup></a>,&nbsp;&nbsp;</span>
+            <span class="author-block">
+              <a href="https://lightchaserx.github.io/">Zhixiang Wang<sup>2</sup></a>,&nbsp;&nbsp;</span> 
+            <span class="author-block">
+              <a href="https://chiweihsiao.github.io/">Chi-Wei Hsiao<sup>3</sup></a>,&nbsp;&nbsp;</span>
+            <span class="author-block">
+              <a href="">Po-Fan Yu<sup>1</sup></a>,&nbsp;&nbsp;</span> 
+            <span class="author-block">
+              <a href="https://sites.google.com/view/berriechen">Yu-Chih Chen<sup>1</sup></a>,&nbsp;&nbsp;</span> 
+            <span class="author-block">
+              <a href="https://yulunalexliu.github.io/">Yu-Lun Liu<sup>1</sup></a></span>
+            <span class="author-block">
+          </div>
+
+          
+          <div class="is-size-5 publication-authors" style="color: bisque;">
+            <span class="author-block">National Yang Ming Chiao Tung University<sup>1</sup>,&nbsp;&nbsp;</span>
+            <span class="author-block">CyberAgent AI Lab<sup>2</sup>,&nbsp;&nbsp;</span>
+            <span class="author-block">MediaTek<sup>3</sup></span>
+          </div>
+
+          <!-- <div class="is-size-5 publication-authors">
+            <span class="author-block">ICCV 2023</span>
+          </div> -->
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <!-- <span class="link-block">
+                <a href="./xx.pdf" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span> -->
+              <!-- arXiv Link. -->
+              <span class="link-block">
+                <a href="" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+
+              <!-- Code Link. -->
+              <span class="link-block"> 
+                <a href="" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code (coming soon)</span>
+                  </a>
+              </span>
+
+              <!-- Demo Link. -->
+              <!-- <span class="link-block">
+                <a href="https://huggingface.co/spaces/sczhou/ProPainter" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <img src="./assets/images/hf.png">
+                  </span>
+                  <span>Demo</span>
+                </a>
+              </span> -->
+
+              <!-- Video Link. -->
+              <!-- <span class="link-block">
+                <a href="" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-youtube"></i>
+                  </span>
+                  <span>Video</span>
+                </a>
+              </span> -->
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="teaser">
+  <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <!-- <div class="column is-four-fifths"> -->
+        <div class="column">
+          <div class="content has-text-justified" style="color: white;">
+            <br>
+            <b>Stream-DiffVSR</b> achieves superior perceptual quality 
+            while demonstrating significantly reduced inference latency compared to existing offline diffusion-based approaches.
+          </div>
+          <div class="hr"></div>
+        </div>
+      </div>
+  </div>
+</section>
+
+<!-- Paper video. -->
+<div id="spotlight-video">
+  <div class="container is-max-desktop">
+      <div class="column">
+        <h2 class="title is-3">
+          <!-- <span class="a"><span style="color: #4285F4;">Stream</span><span style="color: #EA4335;">-</span><span style="color: #FBBC05;">Diff</span><span style="color: #34A853;">VSR</span></span> -->
+          <span class="b" style="color: white;">Demo on a single NVIDIA RTX 4090 GPU</span>
+        </h2>
+        <div class="publication-video">
+          <video muted autoplay="autoplay" loop="loop" width="100%">
+            <source src="assets/videos/stream-diffvsr-demo.mp4" type="video/mp4">
+          </video> 
+        </div>
+    </div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <!-- <div class="column is-four-fifths"> -->
+      <div class="column">
+        <!-- <h2 class="title is-3">Method</h2> -->
+        
+        <div class="content has-text-justified">
+          <p style="color: white;">
+            <b>Comparison of visual quality and inference speed across various categories of VSR methods.</b> 
+            Stream-DiffVSR achieves superior perceptual quality (lower LPIPS) and maintains comparable runtime 
+            to CNN- and Transformer-based online models, while also demonstrating significantly reduced inference 
+            latency compared to existing offline approaches. Best and second-best results are marked 
+            in <span style="color: red;"><b>red</b></span> and <span style="color: lightgreen;"><b>green</b></span>.
+          </p>
+          <div class="column">
+            <img src="assets/images/teaser.png" />
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+      <!-- <div class="column"> -->
+        <h2 class="title is-3" style="color: white;">Abstract</h2>
+        <div class="content has-text-justified">
+          <p style="color: white;">
+            Diffusion-based video super-resolution (VSR) methods achieve strong perceptual quality but remain impractical 
+            for latency-sensitive settings due to reliance on future frames and expensive multi-step denoising. 
+            We propose Stream-DiffVSR, a causally conditioned diffusion framework for efficient online VSR. 
+            Operating strictly on past frames, it combines a four-step distilled denoiser for fast inference, 
+            an Auto-regressive Temporal Guidance (ARTG) module injecting motion-aligned cues during latent denoising, 
+            and a lightweight temporal-aware decoder with a Temporal Processor Module (TPM) enhancing detail and temporal 
+            coherence. Stream-DiffVSR processes 720p frames in 0.328 seconds on an RTX4090 GPU and significantly outperforms 
+            prior diffusion-based methods. Compared with the online SOTA TMP~\citep{zhang2024tmp}, it boosts perceptual quality 
+            (LPIPS +0.095) while reducing latency by over 130X. Stream-DiffVSR achieves the lowest latency reported for 
+            diffusion-based VSR reducing initial delay from over 4600 seconds to 0.328 seconds, thereby making it the first 
+            diffusion VSR method suitable for low-latency online deployment.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <!-- <div class="column is-four-fifths"> -->
+      <div class="column">
+        <h2 class="title is-3" style="color: white;">Method</h2>
+
+        <div class="content has-text-justified">
+          <p style="color: white;">
+            <b>Inference pipeline for online video super-resolution.</b>
+            Given a low-quality (LQ) input frame, we first initialize its latent representation 
+            and employ an autoregressive diffusion model composed of a distilled denoising U-Net, 
+            autoregressive temporal Guidance, and an autoregressive temporal Decoder. 
+            Temporal guidance utilizes flow-warped high-quality (HQ) results from the previous frame 
+            to condition the current frame’s latent denoising and decoding processes, 
+            significantly improving perceptual quality and temporal consistency in an efficient, online manner.
+          </p>
+          <div class="column">
+            <img src="assets/images/pipeline.png" />
+          </div>
+        </div>
+
+        <div class="content has-text-justified">
+          <p style="color: white;">
+            <b>Auto-regressive Temporal-aware Decoder.</b>
+            Given the denoised latent and warped previous frame, our decoder enhances temporal consistency 
+            using temporal processor modules. These module aligns and fuses these features via interpolation, 
+            convolution, and weighted fusion, effectively stabilizing detail reconstruction when decoding into the final RGB frame.
+          </p>
+          <div class="column", style="text-align: center;">
+            <img src="assets/images/AutoEncoder.png", width="80%"/>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- long video-->
+<section class="hero" style="color: #101529;">
+  <div class="hero-body">
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-3" style="color: white;">Long Videos Results (upscale &times4)</h2>
+    </div>
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/reds4/bicubic/000.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/reds4/ours/000.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/reds4/bicubic/011.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/reds4/ours/011.mp4" type="video/mp4">
+              </video>
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/reds4/bicubic/015.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/reds4/ours/015.mp4" type="video/mp4">
+              </video>
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/reds4/bicubic/020.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/reds4/ours/020.mp4" type="video/mp4">
+              </video>
+            </div>
+          </div>
+        </div>
+
+      </div>
+  </div>
+</section>
+
+<!-- real world video -->
+<section class="hero">
+  <div class="hero-body">
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-3" style="color: white;">Real-World Videos Results (upscale &times4)</h2>
+    </div>
+    <div class="container">
+      <div id="results-carousel" class="carousel results-carousel">
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/bicubic/000.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/ours/000.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/bicubic/001.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/ours/001.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/bicubic/002.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/ours/002.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/bicubic/003.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/ours/003.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/bicubic/004.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/ours/004.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/bicubic/005.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/ours/005.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/bicubic/006.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/ours/006.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/bicubic/007.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/ours/007.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/bicubic/008.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/ours/008.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/bicubic/009.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video muted autoplay="autoplay" loop="loop" width="100%">
+                <source src="assets/videos/UDM10/ours/009.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+      </div>
+  </div>
+</section>
+
+<div>
+  <div class="container is-max-desktop">
+      <div class="column">
+        <h2 class="title is-3" style="text-align: center;">
+          <!-- <span class="a"><span style="color: #4285F4;">Stream</span><span style="color: #EA4335;">-</span><span style="color: #FBBC05;">Diff</span><span style="color: #34A853;">VSR</span></span> -->
+          <span class="b" style="color: white;">Comparison between different methods.</span>
+        </h2>
+        <div class="publication-video">
+          <video muted autoplay="autoplay" loop="loop" width="100%">
+            <source src="assets/videos/multi_methods_comparison.mp4" type="video/mp4">
+          </video> 
+        </div>
+    </div>
+  </div>
+</div>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title" style="color: white;">BibTeX</h2>
+    <!-- <pre><code>@InProceedings{
+    }</code></pre> -->
+  </div>
+</section>
+
+
+<footer class="footer" style="background-color: #101529;">
+  <div class="container">
+    <!-- <div class="content has-text-centered">
+      <a class="icon-link" href="" target="_blank">
+        <i class="fas fa-file-pdf"></i>
+      </a>
+      <a class="icon-link" href="" target="_blank">
+        <i class="fab fa-github"></i>
+      </a>
+      <a class="icon-link" href="" target="_blank">
+        <i class="fab fa-youtube"></i>
+      </a>
+    </div> -->
+
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <div class="columns is-centered" style="color: white;"><p>
+            This website template is borrowed from <a href="https://github.com/nerfies/nerfies.github.io" target="_blank">here</a>. Thank you!
+          </p></div>
+        </div>
+      </div>
+    </div>
+
+    <!--=================Visitor==========================-->
+    <div class="content has-text-centered" style="padding:0 0 0 0">
+      <!-- <img src='https://api.infinitescript.com/badgen/count?name=sczhou/Upscale-A-Video&ltext=Visitors&color=3977dd' alt='visitors'> -->
+    </div>
+
+  </div>
+</footer>
+
+  <!-- custom js file  -->
+  <!-- <script defer src="./assets/js/fontawesome.all.min.js"></script> -->
+  <script src="assets/js/bulma-carousel.min.js"></script>
+  <script src="assets/js/bulma-slider.min.js"></script>
+  <script src="assets/js/index.js"></script>
+  <script src="assets/js/jquery.event.move.js"></script>
+  <script src="assets/js/jquery.twentytwenty.js"></script>
+  <script>
+  $(function(){
+    $(".twentytwenty-container").twentytwenty();
+    // $(".twentytwenty-container", "#results-carousel").twentytwenty({default_offset_pct: 0.5, ratio: 0.5});
+  });
+  </script>
+</body>
+</html>
