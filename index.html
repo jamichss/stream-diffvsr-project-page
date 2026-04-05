@@ -2,8 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <meta name="description" content="ProPainter for Video Inpainting">
-  <meta name="keywords" content="ProPainter, Video Inpainting, Video Completion, Watermark Removal, Temporal Propogation">
+  <meta name="description" content="Stream-DiffVSR for Video Super-Resolution">
+  <meta name="keywords" content="Diffusion, Video Super-Resolution, Temporal Propogation">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Stream-DiffVSR for streaming video super-resolution</title>
   <link rel="icon" href="assets/images/icon.png" type="image/png">
@@ -39,6 +39,50 @@
   <link rel="stylesheet" href="assets/css/twentytwenty.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
+
+<script>
+  function loadVideo(video) {
+    if (video.dataset.loaded === "true") return;
+
+    const sources = video.querySelectorAll("source[data-src]");
+    sources.forEach(source => {
+      source.src = source.dataset.src;
+      source.removeAttribute("data-src");
+    });
+
+    video.load();
+    video.dataset.loaded = "true";
+
+    if (video.autoplay) {
+      const p = video.play();
+      if (p !== undefined) p.catch(() => {});
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const lazyVideos = document.querySelectorAll("video.lazy-video");
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            loadVideo(entry.target);
+            obs.unobserve(entry.target);
+          }
+        });
+      }, {
+        root: null,
+        rootMargin: "300px 0px",
+        threshold: 0.01
+      });
+
+      lazyVideos.forEach(video => observer.observe(video));
+    } else {
+      lazyVideos.forEach(video => loadVideo(video));
+    }
+  });
+</script>
+
 <body style="background-color: #101529;">
 
 <section class="hero">
@@ -271,79 +315,6 @@
   </div>
 </section>
 
-<!-- long video-->
-<section class="hero" style="color: #101529;">
-  <div class="hero-body">
-    <div class="columns is-centered has-text-centered">
-      <h2 class="title is-3" style="color: white;">Long Videos Results (upscale &times4)</h2>
-    </div>
-    <div class="container">
-      <div id="results-carousel" class="carousel results-carousel">
-
-        <div class="item">
-          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/reds4/bicubic/000.mp4" type="video/mp4">
-              </video> 
-            </div>
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/reds4/ours/000.mp4" type="video/mp4">
-              </video> 
-            </div>
-          </div>
-        </div>
-
-        <div class="item">
-          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/reds4/bicubic/011.mp4" type="video/mp4">
-              </video> 
-            </div>
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/reds4/ours/011.mp4" type="video/mp4">
-              </video>
-            </div>
-          </div>
-        </div>
-
-        <div class="item">
-          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/reds4/bicubic/015.mp4" type="video/mp4">
-              </video> 
-            </div>
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/reds4/ours/015.mp4" type="video/mp4">
-              </video>
-            </div>
-          </div>
-        </div>
-
-        <div class="item">
-          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/reds4/bicubic/020.mp4" type="video/mp4">
-              </video> 
-            </div>
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/reds4/ours/020.mp4" type="video/mp4">
-              </video>
-            </div>
-          </div>
-        </div>
-
-      </div>
-  </div>
-</section>
-
 <!-- real world video -->
 <section class="hero">
   <div class="hero-body">
@@ -356,28 +327,13 @@
         <div class="item">
           <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/bicubic/000.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/bicubic/000.mp4" type="video/mp4">
               </video> 
             </div>
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/ours/000.mp4" type="video/mp4">
-              </video> 
-            </div>
-          </div>
-        </div>
-
-        <div class="item">
-          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/bicubic/001.mp4" type="video/mp4">
-              </video> 
-            </div>
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/ours/001.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/ours/000.mp4" type="video/mp4">
               </video> 
             </div>
           </div>
@@ -386,28 +342,13 @@
         <div class="item">
           <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/bicubic/002.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/bicubic/001.mp4" type="video/mp4">
               </video> 
             </div>
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/ours/002.mp4" type="video/mp4">
-              </video> 
-            </div>
-          </div>
-        </div>
-
-        <div class="item">
-          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/bicubic/003.mp4" type="video/mp4">
-              </video> 
-            </div>
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/ours/003.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/ours/001.mp4" type="video/mp4">
               </video> 
             </div>
           </div>
@@ -416,28 +357,13 @@
         <div class="item">
           <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/bicubic/004.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/bicubic/002.mp4" type="video/mp4">
               </video> 
             </div>
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/ours/004.mp4" type="video/mp4">
-              </video> 
-            </div>
-          </div>
-        </div>
-
-        <div class="item">
-          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/bicubic/005.mp4" type="video/mp4">
-              </video> 
-            </div>
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/ours/005.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/ours/002.mp4" type="video/mp4">
               </video> 
             </div>
           </div>
@@ -446,28 +372,13 @@
         <div class="item">
           <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/bicubic/006.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/bicubic/003.mp4" type="video/mp4">
               </video> 
             </div>
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/ours/006.mp4" type="video/mp4">
-              </video> 
-            </div>
-          </div>
-        </div>
-
-        <div class="item">
-          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/bicubic/007.mp4" type="video/mp4">
-              </video> 
-            </div>
-            <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/ours/007.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/ours/003.mp4" type="video/mp4">
               </video> 
             </div>
           </div>
@@ -476,13 +387,13 @@
         <div class="item">
           <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/bicubic/008.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/bicubic/004.mp4" type="video/mp4">
               </video> 
             </div>
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/ours/008.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/ours/004.mp4" type="video/mp4">
               </video> 
             </div>
           </div>
@@ -491,13 +402,73 @@
         <div class="item">
           <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/bicubic/009.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/bicubic/005.mp4" type="video/mp4">
               </video> 
             </div>
             <div class="video">
-              <video muted autoplay="autoplay" loop="loop" width="100%">
-                <source src="assets/videos/UDM10/ours/009.mp4" type="video/mp4">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/ours/005.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/bicubic/006.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/ours/006.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/bicubic/007.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/ours/007.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/bicubic/008.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/ours/008.mp4" type="video/mp4">
+              </video> 
+            </div>
+          </div>
+        </div>
+
+        <div class="item">
+          <div class="twentytwenty-container" data-orientation="horizontal" ratio="0.5625">
+            <div class="video">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/bicubic/009.mp4" type="video/mp4">
+              </video> 
+            </div>
+            <div class="video">
+              <video class="lazy-video" muted autoplay loop playsinline preload="none" width="100%">
+                <source data-src="assets/videos/UDM10/ours/009.mp4" type="video/mp4">
               </video> 
             </div>
           </div>
@@ -507,21 +478,45 @@
   </div>
 </section>
 
-<div>
-  <div class="container is-max-desktop">
-      <div class="column">
-        <h2 class="title is-3" style="text-align: center;">
-          <!-- <span class="a"><span style="color: #4285F4;">Stream</span><span style="color: #EA4335;">-</span><span style="color: #FBBC05;">Diff</span><span style="color: #34A853;">VSR</span></span> -->
-          <span class="b" style="color: white;">Comparison between different methods.</span>
-        </h2>
-        <div class="publication-video">
-          <video muted autoplay="autoplay" loop="loop" width="100%">
-            <source src="assets/videos/multi_methods_comparison.mp4" type="video/mp4">
-          </video> 
+<!-- long video-->
+<section class="hero is-light is-small" style="background-color: #101529;">
+  <div class="hero-body">
+    <div class="columns is-centered has-text-centered">
+      <h2 class="title is-3" style="color: white;">Long Video Comparisons (method and max end-to-end latency (s) on an RTX pro 6000)</h2>
+    </div>
+
+    <div class="container">
+      <div style="display:flex; gap:16px; align-items:flex-start; margin-bottom:24px;">
+        <div style="width:50%;">
+          <video class="lazy-video" muted autoplay loop playsinline preload="none" style="width:100%; display:block;">
+            <source src="assets/videos/reds4_dit_zoom_in/000_roiA_web.mp4" type="video/mp4">
+          </video>
         </div>
+      
+        <div style="width:50%;">
+          <video class="lazy-video" muted autoplay loop playsinline preload="none" style="width:100%; display:block;">
+            <source src="assets/videos/reds4_dit_zoom_in/011_roiA_web.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:16px; align-items:flex-start;">
+        <div style="width:50%;">
+          <video class="lazy-video" muted autoplay loop playsinline preload="none" style="width:100%; display:block;">
+            <source src="assets/videos/reds4_dit_zoom_in/015_roiA_web.mp4" type="video/mp4">
+          </video>
+        </div>
+      
+        <div style="width:50%;">
+          <video class="lazy-video" muted autoplay loop playsinline preload="none" style="width:100%; display:block;">
+            <source src="assets/videos/reds4_dit_zoom_in/020_roiA_web.mp4" type="video/mp4">
+          </video>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+</section>
+    
 
 <section class="section">
   <div class="container is-max-desktop" style="text-align: center;">
